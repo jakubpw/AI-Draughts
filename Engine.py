@@ -1,7 +1,6 @@
 from Position import Position
 from Board import Board
 
-from func_timeout import func_timeout, FunctionTimedOut
 
 # This class holds a full state of the game: a board (as a Board class), an information wether it's the white player's move, and an information wether the game has already finished because one of the players lost
 

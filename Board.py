@@ -22,20 +22,17 @@ class Board:
         white = Piece.whitePiece(y, x, king)
         self.whites += [white]
         return white
-    
-    
+
     # Create a new black piece at position (y, x) and add it to the whites list
     def newBlack(self, y, x, king=False):
         black = Piece.blackPiece(y, x, king)
         self.blacks += [black]
         return black
-    
-    
+
     # Check if a Position where is on the board
     def on_board(self, where):
         return 0 <= where.y and where.y < 10 and 0 <= where.x and where.x < 10
-    
-    
+
     # Check if the given position is on the board and is occupied by a white piece
     def isWhite(self, where):
         # Check, if the Position is on the board
@@ -46,8 +43,7 @@ class Board:
             return False
         # Check, if the Position is occupied by a white piece
         return self.world[where.y][where.x].white
-    
-    
+
     # Check if the given position is on the board and is occupied by a black piece
     def isBlack(self, where):
         if not self.on_board(where):
@@ -55,21 +51,19 @@ class Board:
         if self.world[where.y][where.x] is None:
             return False
         return not self.world[where.y][where.x].white
-    
-    
+
     # Check if the given position is on the board and isn't occupied
     def isEmpty(self, where):
         if not self.on_board(where):
             return False
         return self.world[where.y][where.x] is None
-    
-    
+
     # Check if the white player cannot make any move and therefore has just lost
     def white_lost(self):
         # If white has no pieces left, they cannot make any move and so have lost
         if len(self.whites) == 0:
             return True
-     
+
         # If white can capture an opponents piece, they can make a move and so haven't lost yet
         if self.capture_possible():
             return False
@@ -77,8 +71,7 @@ class Board:
         if self.normal_move_possible():
             return False
         return True
-    
-    
+
     # Check if it is possible for the white player to capture an opponent's piece
     def capture_possible(self):
         # Iterate over all the white pieces
@@ -87,7 +80,7 @@ class Board:
             if not white.king:
                 for i in [-1, 1]:
                     if self.isBlack(white.position().add(1, i)):
-                        if self.isEmpty(white.position().add(2, 2*i)):
+                        if self.isEmpty(white.position().add(2, 2 * i)):
                             return True
             else:
                 # Iterate over possible directions of movement
@@ -100,8 +93,7 @@ class Board:
                         if self.isBlack(where) and self.isEmpty(where.add(yi, xi)):
                             return True
         return False
-    
-    
+
     # Check if a non-capturing move is possible
     def normal_move_possible(self):
         # Iterate over all the white pieces
@@ -114,19 +106,17 @@ class Board:
                 if white.king and self.isEmpty(white.position().add(-1, i)):
                     return True
         return False
-    
-    
+
     # Initializes the board to a starting configuration
     def __init__(self):
         self.whites = []
         self.blacks = []
         # Create white and black pieces on appropriate positions and add them to the board's world
         self.world = [[(self.newWhite(y, x) if y < 3 else self.newBlack(y, x))
-                           if ((x + y) % 2 == 0 and (y < 3 or y > 6)) else None 
-                    for x in range(10)]
-                    for y in range(10)]
-    
-    
+                       if ((x + y) % 2 == 0 and (y < 3 or y > 6)) else None
+                       for x in range(10)]
+                      for y in range(10)]
+
     # Initializes an empty board (with no pieces on it)
     @staticmethod
     def empty_board():
@@ -135,29 +125,27 @@ class Board:
         to_return.blacks = []
         to_return.world = [[None for x in range(10)] for y in range(10)]
         return to_return
-    
-    
+
     # Returns a safe copy of the board - we can edit it without changing the copied board
     def copy(self):
         new_board = Board.empty_board()
         new_board.whites = []
         new_board.blacks = []
-        
+
         for white in self.whites:
             new_board.world[white.y][white.x] = new_board.newWhite(white.y, white.x, white.king)
-            
+
         for black in self.blacks:
             new_board.world[black.y][black.x] = new_board.newBlack(black.y, black.x, black.king)
-            
+
         return new_board
-        
-        
+
     # Returns a new board, which is a copy of this board turned around and with all the pieces' colours reversed.
     # We use this function at the end of each move, so that in the
     # internal representation the player who is about to move is always white
     def revert(self):
         new_board = self.copy()
-        
+
         # First, swap the lists of white and black colours
         new_board.whites, new_board.blacks = new_board.blacks, new_board.whites
         # Then change a colour of each piece
@@ -171,22 +159,22 @@ class Board:
         # Now modify the world accordingly, so that each piece is kept in board at its correct position
         for x in range(10):
             for y in range(5):
-                new_board.world[y][x], new_board.world[9 - y][9 - x] = new_board.world[9 - y][9 - x], new_board.world[y][x]
+                new_board.world[y][x], new_board.world[9 - y][9 - x] = new_board.world[9 - y][9 - x], \
+                                                                       new_board.world[y][x]
 
         return new_board
-        
-        
+
     # Return a state of board after a move. Notice that we don't change the state of this board, but return a new board which shows how it will look like after makinhg a move
     # moves should be a list of positions, which a moving place visits between its moves (see Game class for a detailed description)
     def make_move(self, moves):
         if len(moves) < 2:
             raise ValueError("You have to move to a new position", self, moves)
-            
+
         new_board = self.copy()
         for i in range(len(moves) - 1):
             try:
                 new_board = new_board.make_single_move(
-                    moves[i], moves[i+1],
+                    moves[i], moves[i + 1],
                     must_capture=(i > 0 or self.capture_possible()), first_move=(i == 0))
             except ValueError as ve:
                 raise ve
@@ -198,15 +186,14 @@ class Board:
 
         # Inverting board at the end of a move, so that the player who moves is white in Board's internal representation
         return new_board.revert()
-        
-    
+
     # Return a state of a board after making a single move from one position to another (i. e., a single capture or a single step)
     def make_single_move(self, old, new, must_capture=False, first_move=True):
         new_board = self.copy()
         piece = new_board.world[old.y][old.x]
         yi = np.sign(new.y - old.y)
         xi = np.sign(new.x - old.x)
-        
+
         moves_log = {
             'move': [{'y': old.y, 'x': old.x}, {'y': new.y, 'x': new.x}],
             'must_capture': must_capture, 'first_move': first_move}
@@ -214,8 +201,7 @@ class Board:
             raise ValueError("You have to move your own piece", self, moves_log)
         if not self.isEmpty(new):
             raise ValueError("You have to move to an empty field", self, moves_log)
-        
-        
+
         if must_capture:
             if not piece.king:
                 if abs(new.y - old.y) != 2 or abs(new.x - old.x) != 2 or (first_move and new.y - old.y != 2):
@@ -226,15 +212,15 @@ class Board:
 
                 # Update the new_board after this move - remove the captured black piece
                 for black in new_board.blacks:
-                    if black.y == old.y+1 and black.x == old.middle(new).x:
+                    if black.y == old.middle(new).y and black.x == old.middle(new).x:
                         new_board.blacks.remove(black)
                         break
                 new_board.world[old.middle(new).y][old.middle(new).x] = None
-                
+
             else:
                 if abs(new.y - old.y) != abs(new.x - old.x):
                     raise ValueError("You cannot move there - too far", self, moves)
-                
+
                 # Check if there is a black piece which was captured
                 where = old.add(yi, xi)
                 captured = []
@@ -246,10 +232,10 @@ class Board:
                     if self.isWhite(where):
                         raise ValueError("You cannot move over your own piece!", self, moves_log)
                     where = where.add(yi, xi)
-                    
+
                 if len(captured) == 0:
                     raise ValueError("You have to capture an enemy's piece", self, moves_log)
-                
+
                 # Update the new_board after this move - remove the captured black piece
                 for captured_position in captured:
                     for black in new_board.blacks:
@@ -257,7 +243,7 @@ class Board:
                             new_board.blacks.remove(black)
                             break
                     new_board.world[captured_position.y][captured_position.x] = None
-                
+
         else:
             if not piece.king:
                 if new.y - old.y != 1 or abs(new.x - old.x) != 1:
@@ -265,17 +251,16 @@ class Board:
             else:
                 if abs(new.y - old.y) != abs(new.x - old.x):
                     raise ValueError("You can only move diagonally", self, moves_log)
-                
+
                 where = old.add(yi, xi)
                 while where.y != new.y:
                     if not self.isEmpty(where):
                         raise ValueError("You cannot move over this square", self, moves_log)
                     where = where.add(yi, xi)
-                
+
                 if not self.isEmpty(where):
                     raise ValueError("You cannot move to this square", self, moves_log)
-        
-        
+
         # Update the new_board after this move - change the position of the white piece who moved
         for white in new_board.whites:
             if white.y == old.y and white.x == old.x:
@@ -283,36 +268,94 @@ class Board:
                 white.y = new.y
         new_board.world[new.y][new.x] = new_board.world[old.y][old.x]
         new_board.world[old.y][old.x] = None
-        
+
         return new_board
-    
-    
+
+    def possible_captures(self, king, position, captures_moves_list):
+        ans = []
+        # Consider different cases, depending on wether a piece is a king or not
+        if not king:
+            possible_y = [1]
+            if len(captures_moves_list) > 1:
+                possible_y.append(-1)
+            for j in possible_y:
+                for i in [-1, 1]:
+                    if self.isBlack(position.add(j, i)):
+                        if self.isEmpty(position.add(j * 2, 2 * i)):
+                            new_position = position.add(j * 2, 2 * i)
+                            new_board = self.make_single_move(position, new_position, True, False)
+                            new_captures_moves_list = captures_moves_list.copy()
+                            new_captures_moves_list.append(new_position)
+                            ans += [new_captures_moves_list.copy()]
+                            ans += new_board.possible_captures(king, new_position, new_captures_moves_list)
+
+        else:
+            # Iterate over possible directions of movement
+            for xi in [-1, 1]:
+                for yi in [-1, 1]:
+                    where = position.add(yi, xi)
+                    # Go in that direction, until an occuppied field is found or we reach the end of the board
+                    while self.isEmpty(where):
+                        where = where.add(yi, xi)
+                    if self.isBlack(where) and self.isEmpty(where.add(yi, xi)):
+                        where = where.add(yi, xi)
+                        new_position = where
+                        while self.isEmpty(where):
+                            ans += [captures_moves_list + [where]]
+                            where = where.add(yi, xi)
+                        new_board = self.make_single_move(position, new_position, True, False)
+                        new_captures_moves_list = captures_moves_list.copy()
+                        new_captures_moves_list.append(new_position)
+                        ans += new_board.possible_captures(king, new_position, new_captures_moves_list)
+        return ans
+
+    def possible_moves(self):
+        moves = []
+        if self.capture_possible():
+            for white in self.whites:
+                moves += self.possible_captures(white.king, white.position(), [white.position()])
+        else:
+            for white in self.whites:
+                if not white.king:
+                    for i in [-1, 1]:
+                        if self.isEmpty(white.position().add(1, i)):
+                            moves += [[white.position(), white.position().add(1, i)]]
+                else:
+                    for xi in [-1, 1]:
+                        for yi in [-1, 1]:
+                            where = white.position().add(yi, xi)
+                            while self.isEmpty(where):
+                                moves += [[white.position(), where]]
+                                where = where.add(yi, xi)
+        return moves
+
     # Display the board
-    def show(self, black_moves = False):
+    def show(self, black_moves=False):
         if black_moves:
             self.revert().show()
             return
-        
+
         white = (200, 255, 200)
         black = (0, 100, 0)
-        
+
         size = 40
         img = Image.new("RGB", (10 * size, 10 * size))
-        
+
         arr = np.array(img)
         arr[:] = (255, 255, 255)
 
         indices = np.arange(10)
         col_num = np.repeat(indices, size)
-        col_num = np.tile(col_num, (size*10, 1))
+        col_num = np.tile(col_num, (size * 10, 1))
         row_num = np.transpose(col_num)
         is_black = (col_num + row_num) % 2 == 0
         arr[is_black] = (0, 0, 0)
 
         for piece in self.whites + self.blacks:
-            draw_circle(arr, size*piece.y + size/2, size*piece.x + size/2, 12, white if piece.white else black)
+            draw_circle(arr, size * piece.y + size / 2, size * piece.x + size / 2, 12, white if piece.white else black)
             if piece.king:
-                draw_circle(arr, size*piece.y + size/2, size*piece.x + size/2, 4, black if piece.white else white)
+                draw_circle(arr, size * piece.y + size / 2, size * piece.x + size / 2, 4,
+                            black if piece.white else white)
 
         out = Image.fromarray(arr)
         display(out)
