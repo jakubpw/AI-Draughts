@@ -205,7 +205,7 @@ class Board:
         if must_capture:
             if not piece.king:
                 if abs(new.y - old.y) != 2 or abs(new.x - old.x) != 2 or (first_move and new.y - old.y != 2):
-                    print(self.capture_possible(True))
+                    print(self.capture_possible())
                     raise ValueError("You have to capture", self, moves_log)
                 if not self.isBlack(old.middle(new)):
                     raise ValueError("You have to capture an enemy", self, moves_log)
@@ -284,10 +284,10 @@ class Board:
                         if self.isEmpty(position.add(j * 2, 2 * i)):
                             new_position = position.add(j * 2, 2 * i)
                             new_board = self.make_single_move(position, new_position, True, False)
-                            new_captures_moves_list = captures_moves_list.copy()
-                            new_captures_moves_list.append(new_position)
-                            ans += [new_captures_moves_list.copy()]
-                            ans += new_board.possible_captures(king, new_position, new_captures_moves_list)
+                            captures_moves_list.append(new_position)
+                            ans += [captures_moves_list.copy()]
+                            ans += new_board.possible_captures(king, new_position, captures_moves_list)
+                            captures_moves_list.pop()
 
         else:
             # Iterate over possible directions of movement
@@ -304,9 +304,9 @@ class Board:
                             ans += [captures_moves_list + [where]]
                             where = where.add(yi, xi)
                         new_board = self.make_single_move(position, new_position, True, False)
-                        new_captures_moves_list = captures_moves_list.copy()
-                        new_captures_moves_list.append(new_position)
-                        ans += new_board.possible_captures(king, new_position, new_captures_moves_list)
+                        captures_moves_list.append(new_position)
+                        ans += new_board.possible_captures(king, new_position, captures_moves_list)
+                        captures_moves_list.pop()
         return ans
 
     def possible_moves(self):
